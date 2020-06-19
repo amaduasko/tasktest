@@ -1,26 +1,48 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react'
+import getUsersAndPosts from './utils/fetch-api'
+import CardList from './components/CardList/CardList'
+import CardComponent from './components/Card/Card'
+import Search from './components/Search/Search'
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [initialData, setInitialData] = useState([])
+    const [postAndUsers, setPostAndUsers] = useState([])
+
+    const handleSearch = (value) => {
+        const filteredData = initialData.filter((user) =>
+            user.name.toLowerCase().includes(value.toLowerCase())
+        )
+        return setPostAndUsers(filteredData)
+    }
+
+    useEffect(() => {
+        getUsersAndPosts().then((data) => {
+            setInitialData(data)
+            setPostAndUsers(data)
+        })
+        return () => {
+            setInitialData([])
+            setPostAndUsers([])
+        }
+    }, [])
+
+    return (
+        <div className='App pt-5'>
+            <Search onChange={(value) => handleSearch(value)} />
+            <CardList>
+                {postAndUsers.map(({ id, name, posts }) =>
+                    posts.map(({ id, title, body }) => (
+                        <CardComponent
+                            key={id}
+                            title={title}
+                            body={body}
+                            name={name}
+                        />
+                    ))
+                )}
+            </CardList>
+        </div>
+    )
 }
 
-export default App;
+export default App
